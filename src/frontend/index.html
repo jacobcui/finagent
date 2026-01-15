@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FinAgent UI</title>
+  <link rel="stylesheet" href="/frontend/styles.css">
+</head>
+<body>
+  <header>
+    <h1>FinAgent</h1>
+    <p>Interact with the trading agent backend</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Fetch Financial Data</h2>
+      <form id="fetch-form">
+        <label>
+          Asset Symbol
+          <input id="fetch-asset" type="text" placeholder="AAPL" required>
+        </label>
+        <label>
+          Start Date
+          <input id="fetch-start" type="date" required>
+        </label>
+        <label>
+          End Date
+          <input id="fetch-end" type="date" required>
+        </label>
+        <button type="submit">Fetch</button>
+      </form>
+      <pre id="fetch-result"></pre>
+    </section>
+
+    <section>
+      <h2>Get Trading Decision</h2>
+      <form id="decision-form">
+        <label>
+          Asset Symbol
+          <input id="dec-asset" type="text" placeholder="AAPL" required>
+        </label>
+        <label>
+          News Text
+          <textarea id="dec-news" placeholder="Optional news"></textarea>
+        </label>
+        <label>
+          Expert Guidance
+          <textarea id="dec-guidance" placeholder="Optional guidance"></textarea>
+        </label>
+        <label>
+          Price Data (JSON)
+          <textarea id="dec-price" placeholder='Optional JSON, e.g. {"open":...}'></textarea>
+        </label>
+        <label class="inline">
+          <input id="dec-real" type="checkbox"> Use Real Data
+        </label>
+        <label>
+          Kline Image
+          <input id="dec-image" type="file" accept="image/*">
+        </label>
+        <button type="submit">Request Decision</button>
+      </form>
+      <pre id="decision-result"></pre>
+    </section>
+  </main>
+
+  <footer>
+    <span>Backend: http://localhost:8000</span>
+  </footer>
+
+  <script src="/frontend/app.js"></script>
+</body>
+</html>
