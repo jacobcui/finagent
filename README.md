@@ -27,6 +27,7 @@ Architecture Overview
 
 At a high level:
 - `src/agents/multimodel_trading/agent.py` hosts the main FastAPI app, LangGraph workflow, and CLI for the trading agent.
+- `src/agents/deepquant/agent.py` wraps the DeepQuant backtesting engine as an agent (see [DeepQuant Agent](file:///home/jacob/projects/finagent/src/agents/deepquant/README.md)).
 - `src/core/plugin_base.py` defines the core plugin interfaces and registry.
 - `src/agents/news_yfinance/agent.py` is a concrete plugin that provides market news via yfinance.
 - `src/agents/weather_demo/agent.py` shows a LangChain tool-style agent example.
