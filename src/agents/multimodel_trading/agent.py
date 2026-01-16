@@ -1,28 +1,54 @@
 from __future__ import annotations
+
+"""
+Multimodal trading agent that combines market data, vector retrieval, and LLMs
+to generate trading decisions and expose them via a FastAPI service and CLI.
+"""
+
+import json
 import os
-from dotenv import load_dotenv
-import pandas as pd
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 import faiss
 import numpy as np
-from typing import List, Dict, Any, Optional, Tuple
-from datetime import datetime
-import yfinance as yf
-from pydantic import BaseModel
-from fastapi import FastAPI, UploadFile, File, Query, APIRouter
-from fastapi.staticfiles import StaticFiles
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import XMLOutputParser
-from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
-from core.plugin_base import plugin_registry
-from agents.news_yfinance.agent import YFinanceNewsAgent
+import pandas as pd
 import typer
+import yfinance as yf
+from dotenv import load_dotenv
+from fastapi import APIRouter, FastAPI, File, Query, UploadFile
+from fastapi.staticfiles import StaticFiles
+from langchain_core.output_parsers import XMLOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import END, StateGraph
+from pydantic import BaseModel
 from uvloop import run as uv_run
-import json
+
+from core.plugin_base import plugin_registry
+
+# yfinance uses Yahoo Finance tickers and supports many global exchanges.
+# Common examples:
+# - US (NYSE / Nasdaq): plain symbols, e.g. AAPL, MSFT, SPY
+# - Canada (TSX): ".TO" suffix, e.g. SHOP.TO
+# - UK (LSE): ".L" suffix, e.g. VOD.L
+# - Australia (ASX): ".AX" suffix, e.g. CBA.AX, BHP.AX; ASX 200 index "^AXJO"
+# - Germany (XETRA): ".DE" suffix, e.g. BMW.DE
+# - Hong Kong (HKEX): ".HK" suffix, e.g. 0005.HK
+# - Japan (TSE): ".T" suffix, e.g. 7203.T
+# - Singapore (SGX): ".SI" suffix, e.g. C6L.SI
+# Major indices use a "^" prefix, e.g. ^GSPC (S&P 500), ^DJI, ^IXIC.
+# For a full list of supported exchanges and suffixes, see:
+# https://help.yahoo.com/kb/SLN2310.html
 
 
-app = FastAPI(title="FinAgent - Financial Trading Multimodal Agent (with Vector Retrieval)")
+DESCRIPTION = "Multimodal trading agent with vector retrieval, FastAPI, and CLI."
+
+
+app = FastAPI(
+    title="FinAgent - Financial Trading Multimodal Agent (with Vector Retrieval)"
+)
 load_dotenv()
 app.mount("/", StaticFiles(directory="src/frontend", html=True), name="static")
 router = APIRouter()
@@ -92,7 +118,9 @@ class VectorRetrievalModule:
             return f"[{decision_result}] Improvement suggestion: {improvement}"
         return ""
 
-    def retrieve(self, data_type: str, query: Dict[str, str], top_k: int = 5) -> List[Dict[str, Any]]:
+    def retrieve(
+        self, data_type: str, query: Dict[str, str], top_k: int = 5
+    ) -> List[Dict[str, Any]]:
         if data_type not in self.indexes:
             return []
         query_embeddings: List[List[float]] = []
@@ -167,28 +195,28 @@ class MarketIntelligenceModule:
                 (
                     "user",
                     """
-            Latest market data:
-            Asset symbol: {asset_symbol}
-            Price data: {price_data}
-            News: {news_text}
-            Expert guidance: {expert_guidance}
+        Latest market data:
+        Asset symbol: {asset_symbol}
+        Price data: {price_data}
+        News: {news_text}
+        Expert guidance: {expert_guidance}
 
-            Please output in the following XML format:
-            <output>
-                <string name="analysis">Analysis of each news item (ID + impact period + sentiment + core event)</string>
-                <string name="summary">Summary of investment insights (including market sentiment)</string>
-                <map name="query">
-                    <string name="short_term_impact">Retrieval keywords for short-term impact</string>
-                    <string name="medium_long_term_impact">Retrieval keywords for medium/long-term impact</string>
-                    <string name="bullish_trend">Retrieval keywords for bullish trend</string>
-                    <string name="bearish_trend">Retrieval keywords for bearish trend</string>
-                </map>
-                <map name="market_intel_data">
-                    <string name="core_event">Core event</string>
-                    <string name="impact_period">Impact period</string>
-                    <string name="sentiment">Market sentiment</string>
-                </map>
-            </output>
+        Please output in the following XML format:
+        <output>
+            <string name="analysis">Analysis of each news item (ID + impact period + sentiment + core event)</string>
+            <string name="summary">Summary of investment insights (including market sentiment)</string>
+            <map name="query">
+                <string name="short_term_impact">Retrieval keywords for short-term impact</string>
+                <string name="medium_long_term_impact">Retrieval keywords for medium/long-term impact</string>
+                <string name="bullish_trend">Retrieval keywords for bullish trend</string>
+                <string name="bearish_trend">Retrieval keywords for bearish trend</string>
+            </map>
+            <map name="market_intel_data">
+                <string name="core_event">Core event</string>
+                <string name="impact_period">Impact period</string>
+                <string name="sentiment">Market sentiment</string>
+            </map>
+        </output>
             """,
                 ),
             ]
@@ -208,7 +236,10 @@ class MarketIntelligenceModule:
         if md.kline_image_path:
             vision_prompt = ChatPromptTemplate.from_messages(
                 [
-                    ("system", "Analyze price trends and technical indicators (MA/BB) from candlestick charts."),
+                    (
+                        "system",
+                        "Analyze price trends and technical indicators (MA/BB) from candlestick charts.",
+                    ),
                     (
                         "user",
                         [
@@ -216,7 +247,10 @@ class MarketIntelligenceModule:
                                 "type": "text",
                                 "text": "Please analyze the short/medium/long-term trends in this candlestick chart.",
                             },
-                            {"type": "image_url", "image_url": {"url": f"file://{md.kline_image_path}"}},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"file://{md.kline_image_path}"},
+                            },
                         ],
                     ),
                 ]
@@ -247,7 +281,10 @@ class ReflectionModule:
         self.vector_retriever = vector_retriever
         self.low_level_prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", "Analyze the relationship between market intelligence and price changes."),
+                (
+                    "system",
+                    "Analyze the relationship between market intelligence and price changes.",
+                ),
                 (
                     "user",
                     """
@@ -278,7 +315,10 @@ class ReflectionModule:
         )
         self.high_level_prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", "Reflect on the correctness of historical trading decisions and optimize them."),
+                (
+                    "system",
+                    "Reflect on the correctness of historical trading decisions and optimize them.",
+                ),
                 (
                     "user",
                     """
@@ -312,9 +352,11 @@ class ReflectionModule:
         inputs = {
             "market_intel_summary": mi["summary"],
             "kline_analysis": mi.get("kline_analysis", "None"),
-            "price_changes": json.dumps(state.market_data.price_data)
-            if state.market_data.price_data
-            else "None",
+            "price_changes": (
+                json.dumps(state.market_data.price_data)
+                if state.market_data.price_data
+                else "None"
+            ),
         }
         chain = self.low_level_prompt | llm_text | self.parser
         result = chain.invoke(inputs)
@@ -337,11 +379,17 @@ class ReflectionModule:
         return {"low_level_reflection": result}
 
     def high_level_reflect(self, state: TradingState) -> Dict[str, Any]:
-        trading_history = state.memory.get("trading_history", [])[-10:] if state.memory else []
+        trading_history = (
+            state.memory.get("trading_history", [])[-10:] if state.memory else []
+        )
         inputs = {
             "trading_history": json.dumps(trading_history),
-            "market_trend": state.low_level_reflection["reasoning"]["medium_term_reasoning"],
-            "previous_decisions": json.dumps(state.final_decision) if state.final_decision else "None",
+            "market_trend": state.low_level_reflection["reasoning"][
+                "medium_term_reasoning"
+            ],
+            "previous_decisions": (
+                json.dumps(state.final_decision) if state.final_decision else "None"
+            ),
         }
         chain = self.high_level_prompt | llm_text | self.parser
         result = chain.invoke(inputs)
@@ -422,7 +470,9 @@ class FinancialDataFetcher:
     def __init__(self, news_provider_name: Optional[str] = None):
         self.news_provider_name = news_provider_name
 
-    def fetch_price_data(self, asset_symbol: str, start_date: str, end_date: str) -> Optional[pd.DataFrame]:
+    def fetch_price_data(
+        self, asset_symbol: str, start_date: str, end_date: str
+    ) -> Optional[pd.DataFrame]:
         try:
             if asset_symbol.upper() == "ETHUSD":
                 asset_symbol = "ETH-USD"
@@ -431,7 +481,11 @@ class FinancialDataFetcher:
                 return None
             if isinstance(data.columns, pd.MultiIndex):
                 data = data.xs(asset_symbol, axis=1, level=1)
-            available_cols = [c for c in ["Open", "High", "Low", "Close", "Adj Close"] if c in data.columns]
+            available_cols = [
+                c
+                for c in ["Open", "High", "Low", "Close", "Adj Close"]
+                if c in data.columns
+            ]
             if not available_cols:
                 return None
             data = data[available_cols]
@@ -512,7 +566,9 @@ async def get_trading_decision(
     expert_guidance: Optional[str] = None,
     price_data: Optional[str] = None,
     kline_image: Optional[UploadFile] = File(None),
-    use_real_data: bool = Query(False, description="Whether to use real financial data"),
+    use_real_data: bool = Query(
+        False, description="Whether to use real financial data"
+    ),
 ):
     global finagent_graph, data_fetcher
     if finagent_graph is None or data_fetcher is None:
@@ -522,7 +578,11 @@ async def get_trading_decision(
         start_date = (datetime.now() - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
         real_data = await fetch_financial_data(asset_symbol, start_date, end_date)
         price_dict = real_data["price_data"][-1] if real_data["price_data"] else None
-        news_text = "\n".join(real_data["latest_news"]) if real_data["latest_news"] else news_text
+        news_text = (
+            "\n".join(real_data["latest_news"])
+            if real_data["latest_news"]
+            else news_text
+        )
     else:
         price_dict = json.loads(price_data) if price_data else None
     kline_path = None
@@ -541,7 +601,9 @@ async def get_trading_decision(
         market_data=market_data,
         memory={"trading_history": []},
     )
-    result = finagent_graph.invoke(initial_state, config={"configurable": {"thread_id": "finagent-001"}})
+    result = finagent_graph.invoke(
+        initial_state, config={"configurable": {"thread_id": "finagent-001"}}
+    )
     if kline_path and os.path.exists(kline_path):
         os.remove(kline_path)
     return {
@@ -549,7 +611,10 @@ async def get_trading_decision(
         "decision": result["final_decision"]["action"],
         "reasoning": result["final_decision"]["reasoning"],
         "market_analysis": result["latest_market_intel"]["summary"],
-        "retrieved_historical_data": len(result["latest_market_intel"].get("past_market_intel", [])) > 0,
+        "retrieved_historical_data": len(
+            result["latest_market_intel"].get("past_market_intel", [])
+        )
+        > 0,
     }
 
 
@@ -586,12 +651,16 @@ def test_retrieval(asset_symbol: str = "AAPL"):
         },
         top_k=1,
     )
-    typer.echo(f"Retrieval results: {json.dumps(results, ensure_ascii=False, indent=2)}")
+    typer.echo(
+        f"Retrieval results: {json.dumps(results, ensure_ascii=False, indent=2)}"
+    )
 
 
 @cli.command(name="fetch-financial-data")
 def fetch_financial_data_cli(
-    asset_symbol: str = typer.Option(..., "--asset-symbol", help="Asset symbol, e.g. AAPL or ETHUSD"),
+    asset_symbol: str = typer.Option(
+        ..., "--asset-symbol", help="Asset symbol, e.g. AAPL or ETHUSD"
+    ),
     start_date: str = typer.Option(..., "--start-date", help="Start date (YYYY-MM-DD)"),
     end_date: str = typer.Option(..., "--end-date", help="End date (YYYY-MM-DD)"),
 ):

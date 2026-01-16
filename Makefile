@@ -1,7 +1,7 @@
 PY := uv run
 FRONTEND_DIR := src/frontend
 
-.PHONY: help install install-backend install-frontend backend frontend dev fetch-data build
+.PHONY: help install install-backend install-frontend backend frontend dev fetch-data build lint test exec list-agents
 
 help:
 	@echo "Available targets:"
@@ -13,6 +13,10 @@ help:
 	@echo "  dev              Run backend and frontend (two processes)"
 	@echo "  fetch-data       Example: fetch financial data for AAPL"
 	@echo "  build            Build Python package (sdist and wheel in dist/)"
+	@echo "  lint             Run isort, black, and flake8 over Python sources"
+	@echo "  test             Run pytest test suite under tests/"
+	@echo "  exec             Execute an agent via agent_eval.py"
+	@echo "  list-agents      List all discovered agents"
 
 install: install-backend install-frontend
 
@@ -37,3 +41,23 @@ fetch-data:
 
 build:
 	uv build
+
+lint:
+	$(PY) isort src
+	$(PY) black src
+	$(PY) flake8 src --max-line-length 120
+
+test:
+	PYTHONPATH=src $(PY) pytest tests
+
+exec:
+	@if [ -z "$(AGENT)" ]; then \
+		echo "Usage: make exec AGENT=<agent-slug> ARGS=\"<agent-args>\""; \
+		echo "  Example (no options): make exec AGENT=demo ARGS=\"hello-from-demo\""; \
+		echo "  Example (with options): make exec AGENT=news-yfinance ARGS=\"--asset-symbol AAPL --limit 1\""; \
+		exit 1; \
+	fi
+	PYTHONPATH=src $(PY) src/agent_eval.py --agent $(AGENT) -- $(ARGS)
+
+list-agents:
+	PYTHONPATH=src $(PY) src/list_agents.py

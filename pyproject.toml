@@ -1,18 +1,23 @@
 [project]
 name = "finagent"
-version = "0.1.0"
+version = "0.1.1"
 description = "Agentic trading and analysis system with pluggable agents"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "black>=25.12.0",
     "faiss-cpu>=1.13.2",
     "fastapi>=0.128.0",
+    "flake8>=7.3.0",
+    "isort>=7.0.0",
     "langchain-openai>=1.1.7",
     "langchain[openai]>=1.2.3",
     "langgraph>=1.0.6",
     "pandas>=2.3.3",
+    "pytest>=9.0.2",
     "python-dotenv>=1.2.1",
     "python-multipart>=0.0.21",
+    "prompt-toolkit>=3.0.0",
     "typer>=0.21.1",
     "uvicorn>=0.40.0",
     "uvloop>=0.22.1",
