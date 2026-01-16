@@ -295,7 +295,7 @@ The pattern is:
 Tool-style Agents With LangChain
 --------------------------------
 
-The file [agent.py](file:///home/jacob/projects/finagent/src/agents/weather_demo/agent.py) shows another flavor of “agent”:
+The file [agent.py](file:///home/jacob/projects/finagent/src/agents/weather/agent.py) shows another flavor of “agent”:
 - Tools are defined with `@tool`.
 - A chat model is initialized.
 - `create_agent` builds an agent that uses those tools.
@@ -424,15 +424,15 @@ PYTHONPATH=src uv run src/agent_eval.py exec --agent multimodel_trading -- test-
 PYTHONPATH=src uv run src/agent_eval.py exec --agent multimodel_trading -- fetch-financial-data --asset-symbol AAPL --start-date 2024-01-01 --end-date 2024-01-10
 ```
 
-Run the weather demo agent via the evaluator:
+Run the weather agent via the evaluator:
 
 ```bash
-PYTHONPATH=src uv run src/agent_eval.py exec --agent weather-demo -- --city Sydney
+PYTHONPATH=src uv run src/agent_eval.py exec --agent weather -- --city Sydney
 ```
 
 Notes:
 
-- `--agent` uses the human-friendly agent name (slug) where dashes are allowed. Dashes are automatically converted to underscores to resolve the Python package, so `--agent weather-demo` maps to `agents.weather_demo.agent`, `--agent agent-game` maps to `agents.agent_game.agent`, and so on.
+- `--agent` uses the human-friendly agent name (slug) where dashes are allowed. Dashes are automatically converted to underscores to resolve the Python package, so `--agent weather` maps to `agents.weather.agent`, `--agent agent-game` maps to `agents.agent_game.agent`, and so on.
 - Everything after `--` is passed verbatim to the agent’s `cli`.
 
 To add a new CLI-capable agent:

@@ -17,8 +17,7 @@ class AgentPlugin(ABC):
 class MarketNewsProvider(Protocol):
     name: str
 
-    def get_news(self, asset_symbol: str, limit: int = 5) -> List[str]:
-        ...
+    def get_news(self, asset_symbol: str, limit: int = 5) -> List[str]: ...
 
 
 class PluginRegistry:
@@ -28,7 +27,9 @@ class PluginRegistry:
     def register_news_provider(self, provider: MarketNewsProvider) -> None:
         self._news_providers[provider.name] = provider
 
-    def get_news_provider(self, name: Optional[str] = None) -> Optional[MarketNewsProvider]:
+    def get_news_provider(
+        self, name: Optional[str] = None
+    ) -> Optional[MarketNewsProvider]:
         if name is None:
             if not self._news_providers:
                 return None
@@ -37,4 +38,3 @@ class PluginRegistry:
 
 
 plugin_registry = PluginRegistry()
-
