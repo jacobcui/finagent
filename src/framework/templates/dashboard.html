@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Welcome, {{ user.email }}!</p>
+
+<div style="border: 1px solid #ddd; padding: 15px; margin-top: 20px;">
+    <h3>Subscription Status</h3>
+    <p>Trial Ends: {{ user.trial_end_date.strftime('%Y-%m-%d') }}</p>
+    {% if user.is_trial_active %}
+        <span style="color: green;">Trial Active</span>
+    {% else %}
+        <span style="color: red;">Trial Expired - Please Renew</span>
+    {% endif %}
+</div>
+
+<div style="margin-top: 20px;">
+    <h3>Your Data</h3>
+    <p>Uploads: {{ user.uploads|length }}</p>
+    <p>Logs: {{ user.logs|length }}</p>
+</div>
+{% endblock %}

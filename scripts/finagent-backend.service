@@ -1,0 +1,16 @@
+[Unit]
+Description=FinAgent Backend (Flask)
+After=network.target
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/path/to/finagent
+Environment="PATH=/path/to/finagent/venv/bin"
+Environment="PYTHONPATH=/path/to/finagent"
+Environment="FLASK_APP=src.framework.app"
+ExecStart=/path/to/finagent/venv/bin/gunicorn -w 4 -b 0.0.0.0:5000 src.framework.app:create_app()
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
