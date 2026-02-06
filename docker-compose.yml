@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: finagent-backend
+    command: gunicorn -w 4 -b 0.0.0.0:5000 src.framework.app:create_app()
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=dev-secret-key-docker
+      - DATABASE_URL=sqlite:////app/data/finagent.db
+    volumes:
+      - ./src:/app/src
+      - finagent_data:/app/data
+
+  frontend:
+    build: .
+    container_name: finagent-frontend
+    command: streamlit run src/agents/cross_border_finance/frontend.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      - API_URL=http://backend:5000
+    depends_on:
+      - backend
+    volumes:
+      - ./src:/app/src
+
+volumes:
+  finagent_data:

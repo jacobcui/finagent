@@ -18,4 +18,5 @@ for slug, info in agent_infos.items():
 
 @app.get("/api/agents")
 async def list_agents() -> Dict[str, List[str]]:
+    """"""
     return {"agents": list(agent_infos.keys())}

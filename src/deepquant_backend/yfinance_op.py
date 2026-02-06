@@ -11,7 +11,8 @@ def _ensure_cache_env() -> str:
     )
     os.environ["YFINANCE_CACHE_DIR"] = cache_dir
     os.environ["YF_CACHE_DIR"] = cache_dir
-    # Explicitly allow caching (set to "1" to disable). We keep it enabled but point to a writable path.
+    # Explicitly allow caching (set to "1" to disable).
+    # We keep it enabled but point to a writable path.
     os.environ.setdefault("YF_CACHE_DISABLE", "0")
     os.makedirs(cache_dir, exist_ok=True)
     return cache_dir
@@ -65,13 +66,15 @@ class YFinanceOp:
             if allow_fallback:
                 return self._sample_data(start, end, reason="empty response")
             raise ValueError(
-                f"No data returned for {ticker}. Check ticker spelling, date range, or network connectivity."
+                f"No data returned for {ticker}. "
+                "Check ticker spelling, date range, or network connectivity."
             )
 
         data.dropna(inplace=True)
         data.reset_index(inplace=True)
         if "Date" not in data.columns:
-            # Ensure consistent column naming even when the index had no name (e.g., mocked data)
+            # Ensure consistent column naming even when the index had no name
+            # (e.g., mocked data)
             first_col = data.columns[0]
             data.rename(columns={first_col: "Date"}, inplace=True)
         return data

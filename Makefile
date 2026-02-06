@@ -1,63 +1,46 @@
-PY := uv run
-FRONTEND_DIR := src/frontend
+.PHONY: help up down build logs shell-backend shell-frontend init-db verify-email lint
 
-.PHONY: help install install-backend install-frontend backend frontend dev fetch-data build lint test exec list-agents
+.DEFAULT_GOAL := help
 
-help:
+help: ## List available targets
 	@echo "Available targets:"
-	@echo "  install          Install Python and frontend dependencies"
-	@echo "  install-backend  Install Python dependencies via uv"
-	@echo "  install-frontend Install frontend dependencies via npm"
-	@echo "  backend          Run FastAPI backend (port 8000)"
-	@echo "  frontend         Run Vite frontend dev server"
-	@echo "  dev              Run backend and frontend (two processes)"
-	@echo "  fetch-data       Example: fetch financial data for AAPL"
-	@echo "  build            Build Python package (sdist and wheel in dist/)"
-	@echo "  lint             Run isort, black, and flake8 over Python sources"
-	@echo "  test             Run pytest test suite under tests/"
-	@echo "  exec             Execute an agent via agent_eval.py"
-	@echo "  list-agents      List all discovered agents"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-install: install-backend install-frontend
+up: ## Build and start services in detached mode
+	docker-compose up --build -d
+	@echo "Services started!"
+	@echo "Frontend: http://localhost:8501"
+	@echo "Backend:  http://localhost:5000"
 
-install-backend:
-	uv sync
+down: ## Stop and remove services
+	docker-compose down
 
-install-frontend:
-	cd $(FRONTEND_DIR) && npm install
+build: ## Build services without starting
+	docker-compose build
 
-backend:
-	PYTHONPATH=src $(PY) uvicorn api_service:app --host 0.0.0.0 --port 8000
+logs: ## View output from containers
+	docker-compose logs -f
 
-frontend:
-	cd $(FRONTEND_DIR) && npm start
+shell-backend: ## Open a shell in the backend container
+	docker-compose exec backend /bin/bash
 
-dev:
-	PYTHONPATH=src $(PY) uvicorn api_service:app --host 0.0.0.0 --port 8000 &
-	cd $(FRONTEND_DIR) && npm start
+shell-frontend: ## Open a shell in the frontend container
+	docker-compose exec frontend /bin/bash
 
-fetch-data:
-	$(PY) src/agents/multimodel_trading/agent.py fetch-financial-data --asset-symbol AAPL --start-date 2024-01-01 --end-date 2024-01-10
+init-db: ## Initialize the database inside the backend container
+	docker-compose exec backend python3 -m src.framework.init_db
 
-build:
-	uv build
-
-lint:
-	$(PY) isort src
-	$(PY) black src
-	$(PY) flake8 src --max-line-length 120
-
-test:
-	PYTHONPATH=src $(PY) pytest tests
-
-exec:
-	@if [ -z "$(AGENT)" ]; then \
-		echo "Usage: make exec AGENT=<agent-slug> ARGS=\"<agent-args>\""; \
-		echo "  Example (no options): make exec AGENT=demo ARGS=\"hello-from-demo\""; \
-		echo "  Example (with options): make exec AGENT=news-yfinance ARGS=\"--asset-symbol AAPL --limit 1\""; \
+verify-email: ## Verify a user's email address (Usage: make verify-email email=user@example.com)
+	@if [ -z "$(email)" ]; then \
+		echo "Error: email argument is required. Usage: make verify-email email=user@example.com"; \
 		exit 1; \
 	fi
-	PYTHONPATH=src $(PY) src/agent_eval.py --agent $(AGENT) -- $(ARGS)
+	docker-compose exec backend python3 -m src.framework.verify_user $(email)
 
-list-agents:
-	PYTHONPATH=src $(PY) src/list_agents.py
+lint: ## Run code linters (isort, black, flake8)
+	@echo "Running isort..."
+	docker-compose exec backend isort . --skip venv --skip .venv
+	@echo "Running black..."
+	docker-compose exec backend black . --exclude '/(\.git|\.hg|\.mypy_cache|\.tox|\.venv|venv|_build|buck-out|build|dist)/'
+	@echo "Running flake8..."
+	docker-compose exec backend flake8 . --exclude=venv,.venv --max-line-length=120
