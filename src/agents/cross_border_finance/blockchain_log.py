@@ -1,11 +1,10 @@
-import streamlit as st
 import hashlib
 import os
-import time
-import requests
-from web3 import Web3
-from web3.exceptions import Web3Exception
 from datetime import datetime
+
+import requests
+import streamlit as st
+from web3 import Web3
 
 # Page Configuration removed to avoid Streamlit duplicate config error
 # st.set_page_config(
@@ -19,6 +18,7 @@ DEFAULT_RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com"
 EXPLORER_URL = "https://sepolia.etherscan.io/tx/"
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:5000")
 
+
 def get_env_var(key, default=None):
     """Get environment variable or Streamlit secret."""
     if key in os.environ:
@@ -27,9 +27,11 @@ def get_env_var(key, default=None):
         return st.secrets[key]
     return default
 
+
 def calculate_hash(content: str) -> str:
     """Calculate SHA256 hash of the content."""
-    return hashlib.sha256(content.encode('utf-8')).hexdigest()
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
 
 def connect_to_web3(rpc_url):
     """Connect to Web3 provider."""
@@ -40,6 +42,7 @@ def connect_to_web3(rpc_url):
         return None, "Failed to connect to Sepolia network. Check your RPC URL."
     except Exception as e:
         return None, str(e)
+
 
 def upload_evidence(w3, private_key, content_hash):
     """Upload hash to blockchain as transaction data."""
@@ -57,13 +60,13 @@ def upload_evidence(w3, private_key, content_hash):
 
         # We send 0 ETH to ourselves, with the hash in 'data'
         tx = {
-            'nonce': nonce,
-            'to': sender_address,
-            'value': 0,
-            'gas': 200000,  # Standard gas limit
-            'gasPrice': w3.eth.gas_price,
-            'data': w3.to_bytes(hexstr="0x" + content_hash),
-            'chainId': 11155111  # Sepolia Chain ID
+            "nonce": nonce,
+            "to": sender_address,
+            "value": 0,
+            "gas": 200000,  # Standard gas limit
+            "gasPrice": w3.eth.gas_price,
+            "data": w3.to_bytes(hexstr="0x" + content_hash),
+            "chainId": 11155111,  # Sepolia Chain ID
         }
 
         # Sign transaction
@@ -80,6 +83,7 @@ def upload_evidence(w3, private_key, content_hash):
     except Exception as e:
         return None, str(e)
 
+
 def app():
     st.title("🔗 Blockchain Log Evidence Module (Sepolia)")
     st.markdown("---")
@@ -93,7 +97,9 @@ def app():
 
     # 2. Private Key
     env_pk = get_env_var("WALLET_PRIVATE_KEY", "")
-    private_key = st.sidebar.text_input("Wallet Private Key", value=env_pk, type="password")
+    private_key = st.sidebar.text_input(
+        "Wallet Private Key", value=env_pk, type="password"
+    )
 
     if not private_key:
         st.sidebar.warning("⚠️ Please set WALLET_PRIVATE_KEY in .env or enter it here.")
@@ -102,9 +108,16 @@ def app():
     st.sidebar.markdown("---")
     st.sidebar.markdown("### 🪙 Need Testnet ETH?")
     st.sidebar.markdown("If your balance is 0, get free Sepolia ETH here:")
-    st.sidebar.markdown("- [Alchemy Sepolia Faucet](https://www.alchemy.com/faucets/ethereum-sepolia)")
-    st.sidebar.markdown("- [Google Cloud Web3 Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)")
-    st.sidebar.markdown("- [Infura Sepolia Faucet](https://www.infura.io/faucet/sepolia)")
+    st.sidebar.markdown(
+        "- [Alchemy Sepolia Faucet](https://www.alchemy.com/faucets/ethereum-sepolia)"
+    )
+    st.sidebar.markdown(
+        "- [Google Cloud Web3 Faucet]"
+        "(https://cloud.google.com/application/web3/faucet/ethereum/sepolia)"
+    )
+    st.sidebar.markdown(
+        "- [Infura Sepolia Faucet](https://www.infura.io/faucet/sepolia)"
+    )
 
     # Main Area
     col1, col2 = st.columns([1, 1])
@@ -112,16 +125,25 @@ def app():
     with col1:
         st.subheader("📝 New Operation Log")
 
-        op_type = st.selectbox("Operation Type", [
-            "User Login",
-            "Fund Transfer",
-            "Compliance Check",
-            "Tax Report Generation",
-            "System Config Change",
-            "Other"
-        ])
+        op_type = st.selectbox(
+            "Operation Type",
+            [
+                "User Login",
+                "Fund Transfer",
+                "Compliance Check",
+                "Tax Report Generation",
+                "System Config Change",
+                "Other",
+            ],
+        )
 
-        op_content = st.text_area("Log Content / Details", height=150, placeholder="e.g., User ID 12345 performed transfer of 1000 AUD to recipient X...")
+        op_content = st.text_area(
+            "Log Content / Details",
+            height=150,
+            placeholder=(
+                "e.g., User ID 12345 performed transfer of 1000 AUD to recipient X..."
+            ),
+        )
 
         timestamp = datetime.now().isoformat()
 
@@ -155,29 +177,34 @@ def app():
                 if err:
                     st.error(f"Transaction Failed: {err}")
                     if "insufficient funds" in str(err).lower():
-                        st.warning("👉 Tip: Use the Faucet links in the sidebar to get testnet ETH.")
+                        st.warning(
+                            "👉 Tip: Use the Faucet links in the sidebar to get "
+                            "testnet ETH."
+                        )
                 else:
                     st.success("✅ Evidence Uploaded Successfully!")
                     st.markdown(f"**Transaction Hash:** `{tx_hash}`")
                     st.markdown(f"🔗 [View on Etherscan]({EXPLORER_URL}{tx_hash})")
 
                     # Display what is stored
-                    st.json({
-                        "timestamp": timestamp,
-                        "type": op_type,
-                        "content_hash": content_hash,
-                        "tx_hash": tx_hash
-                    })
+                    st.json(
+                        {
+                            "timestamp": timestamp,
+                            "type": op_type,
+                            "content_hash": content_hash,
+                            "tx_hash": tx_hash,
+                        }
+                    )
 
                     # 4. Save to Database (if user is logged in)
-                    if 'user' in st.session_state and st.session_state['user']:
-                        user = st.session_state['user']
+                    if "user" in st.session_state and st.session_state["user"]:
+                        user = st.session_state["user"]
                         try:
                             payload = {
-                                "user_id": user['id'],
+                                "user_id": user["id"],
                                 "operation_type": op_type,
                                 "operation_content": op_content,
-                                "tx_hash": tx_hash
+                                "tx_hash": tx_hash,
                             }
                             resp = requests.post(f"{API_URL}/api/logs", json=payload)
                             if resp.status_code == 201:
@@ -187,7 +214,9 @@ def app():
                         except Exception as e:
                             st.warning(f"Could not connect to backend DB: {e}")
                     else:
-                        st.info("Log not saved to DB (User not logged in via Platform).")
+                        st.info(
+                            "Log not saved to DB (User not logged in via Platform)."
+                        )
 
     with col2:
         st.subheader("ℹ️ System Status")
@@ -197,9 +226,12 @@ def app():
                 if w3:
                     account = w3.eth.account.from_key(private_key)
                     balance_wei = w3.eth.get_balance(account.address)
-                    balance_eth = w3.from_wei(balance_wei, 'ether')
+                    balance_eth = w3.from_wei(balance_wei, "ether")
 
-                    st.metric("Wallet Address", f"{account.address[:6]}...{account.address[-4:]}")
+                    st.metric(
+                        "Wallet Address",
+                        f"{account.address[:6]}...{account.address[-4:]}",
+                    )
                     st.metric("Sepolia ETH Balance", f"{balance_eth:.4f} ETH")
 
                     if balance_eth == 0:
@@ -211,20 +243,20 @@ def app():
 
         st.markdown("---")
         st.markdown("### Why Blockchain?")
-        st.info(
-            """
-            **Immutable Evidence:** Unlike a standard database, data on the blockchain cannot be altered or deleted by administrators.
+        st.info("""
+            **Immutable Evidence:** Unlike a standard database, data on the blockchain
+            cannot be altered or deleted by administrators.
 
-            **Timestamp Proof:** The block timestamp provides a decentralized, verifiable proof of *when* the data existed.
+            **Timestamp Proof:** The block timestamp provides a decentralized,
+            verifiable proof of *when* the data existed.
 
-            **Transparency:** Anyone with the transaction hash can verify the data integrity without needing special access permissions.
-            """
-        )
+            **Transparency:** Anyone with the transaction hash can verify the data
+            integrity without needing special access permissions.
+            """)
+
 
 if __name__ == "__main__":
     st.set_page_config(
-        page_title="Blockchain Log Evidence",
-        page_icon="🔗",
-        layout="wide"
+        page_title="Blockchain Log Evidence", page_icon="🔗", layout="wide"
     )
     app()

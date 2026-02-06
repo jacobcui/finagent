@@ -15,11 +15,13 @@ ATO_REPORT_TEMPLATE = """
 <head>
     <style>
         body { font-family: sans-serif; font-size: 12px; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        .header { text-align: center; margin-bottom: 20px;
+                  border-bottom: 2px solid #000; padding-bottom: 10px; }
         .title { font-size: 18px; font-weight: bold; }
         .subtitle { font-size: 14px; color: #555; }
         .section { margin-bottom: 15px; }
-        .section-title { font-weight: bold; background-color: #eee; padding: 5px; margin-bottom: 5px; }
+        .section-title { font-weight: bold; background-color: #eee;
+                         padding: 5px; margin-bottom: 5px; }
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .info-item { margin-bottom: 5px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -264,7 +266,9 @@ def app():
                     except Exception as e:
                         st.error(f"PDF生成失败: {str(e)}")
                         st.info(
-                            "提示: WeasyPrint 可能需要系统级依赖 (libcairo2, libpango-1.0-0 等)。如果运行在受限环境，请联系管理员安装。"
+                            "提示: WeasyPrint 可能需要系统级依赖 "
+                            "(libcairo2, libpango-1.0-0 等)。"
+                            "如果运行在受限环境，请联系管理员安装。"
                         )
 
         except Exception as e:

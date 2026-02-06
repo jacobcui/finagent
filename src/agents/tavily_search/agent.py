@@ -78,7 +78,8 @@ async def search_http(
     ),
     api_key: Optional[str] = Query(
         None,
-        description="Override Tavily API key, otherwise env TAVILI_API_KEY or TAVILY_API_KEY is used",
+        description="Override Tavily API key, otherwise env TAVILI_API_KEY "
+        "or TAVILY_API_KEY is used",
     ),
 ) -> Dict[str, Any]:
     try:
@@ -112,7 +113,8 @@ def search(
     api_key: Optional[str] = typer.Option(
         None,
         "--api-key",
-        help="Override Tavily API key, otherwise env TAVILI_API_KEY or TAVILY_API_KEY is used",
+        help="Override Tavily API key, otherwise env TAVILI_API_KEY "
+        "or TAVILY_API_KEY is used",
     ),
 ) -> None:
     try:

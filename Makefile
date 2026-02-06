@@ -1,4 +1,4 @@
-.PHONY: help up down build logs shell-backend shell-frontend init-db
+.PHONY: help up down build logs shell-backend shell-frontend init-db verify-email lint
 
 .DEFAULT_GOAL := help
 
@@ -36,3 +36,11 @@ verify-email: ## Verify a user's email address (Usage: make verify-email email=u
 		exit 1; \
 	fi
 	docker-compose exec backend python3 -m src.framework.verify_user $(email)
+
+lint: ## Run code linters (isort, black, flake8)
+	@echo "Running isort..."
+	docker-compose exec backend isort . --skip venv --skip .venv
+	@echo "Running black..."
+	docker-compose exec backend black . --exclude '/(\.git|\.hg|\.mypy_cache|\.tox|\.venv|venv|_build|buck-out|build|dist)/'
+	@echo "Running flake8..."
+	docker-compose exec backend flake8 . --exclude=venv,.venv --max-line-length=120

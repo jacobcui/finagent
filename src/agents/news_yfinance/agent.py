@@ -79,7 +79,8 @@ class YFinanceNewsAgent:
                 if not title:
                     continue
                 formatted.append(
-                    f"Title: {title} | Publisher: {publisher} | Summary: {summary}".strip()
+                    f"Title: {title} | Publisher: {publisher} | "
+                    f"Summary: {summary}".strip()
                 )
             if formatted:
                 return formatted

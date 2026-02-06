@@ -39,8 +39,8 @@ model = init_chat_model("gpt-4.1", temperature=0.5, timeout=10, max_tokens=1000)
 checkpointer = InMemorySaver()
 
 CHAT_SYSTEM_PROMPT = (
-    "You are a helpful assistant. You can answer general questions, and you also have tools "
-    "exposed by other agents in the system."
+    "You are a helpful assistant. You can answer general questions, "
+    "and you also have tools exposed by other agents in the system."
 )
 
 

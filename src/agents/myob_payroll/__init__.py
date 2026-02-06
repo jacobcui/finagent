@@ -1,3 +1,3 @@
 from .agent import MyobPayrollAgent
 
-__all__ = ['MyobPayrollAgent']
+__all__ = ["MyobPayrollAgent"]

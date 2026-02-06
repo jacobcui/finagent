@@ -36,18 +36,23 @@ class ExchangeRateLockEngine:
             df = pd.read_csv(csv_data, skiprows=10, index_col=0, parse_dates=True)
 
             # 筛选目标货币对（AUD兑目标货币，RBA数据为1澳元兑换的外币数量）
-            # The column names in RBA CSV are usually series IDs like 'FXRUSD', but sometimes descriptive.
+            # The column names in RBA CSV are usually series IDs like 'FXRUSD',
+            # but sometimes descriptive.
             # However, assuming the prompt code logic is correct or I need to verify.
             # RBA CSV columns often have series IDs.
             # If the user provided code assumes specific structure, I will use it.
             # But I should probably add a check or fallback if columns are not found.
-            # For now, I will stick to the user provided code structure but maybe add column detection logic if I can.
-            # The provided code does: currency_col = self.CURRENCY_PAIRS[target_currency]
+            # For now, I will stick to the user provided code structure but maybe
+            # add column detection logic if I can.
+            # The provided code does: currency_col =
+            # self.CURRENCY_PAIRS[target_currency]
             # This implies the CSV has columns named "AUD/USD" or "AUD/CNY".
             # RBA CSV usually has "A$1=USD" or similar description in rows above header?
             # Actually, standard RBA CSV has series IDs.
-            # Let's assume the user code provided in summary is what they want, or I should improve it.
-            # I'll stick to the provided code but wrap it in try/except for column access.
+            # Let's assume the user code provided in summary is what they want,
+            # or I should improve it.
+            # I'll stick to the provided code but wrap it in try/except for column
+            # access.
 
             # If explicit mapping fails, try to find relevant column
             target_col = self.CURRENCY_PAIRS.get(target_currency)
@@ -145,7 +150,8 @@ class ExchangeRateLockEngine:
 
 # 详细注释：Streamlit前端交互界面
 def app():
-    # Only set page config if it hasn't been set (simple check logic not available, relying on wrapper)
+    # Only set page config if it hasn't been set
+    # (simple check logic not available, relying on wrapper)
     # st.set_page_config is removed from here for integration safety
     st.title("跨境金融智能体 - 汇率锁价引擎")
 
@@ -153,7 +159,8 @@ def app():
     engine = ExchangeRateLockEngine()
 
     # 输入参数配置
-    # Use object notation for sidebar to avoid context issues in some versions but 'with' is fine
+    # Use object notation for sidebar to avoid context issues in some versions but
+    # 'with' is fine
     with st.sidebar:
         st.header("输入参数配置")
         payment_cycle = st.number_input(

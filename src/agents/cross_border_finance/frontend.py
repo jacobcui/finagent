@@ -1,26 +1,28 @@
-import streamlit as st
-import sys
 import os
+import sys
+
 import requests
+import streamlit as st
 
 # Add the project root to the python path to ensure imports work correctly
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
 
-from src.agents.cross_border_finance import lock_engine
-from src.agents.cross_border_finance import compliance
+import src.agents.cross_border_finance.blockchain_log as blockchain_log  # noqa: E402
+from src.agents.cross_border_finance import compliance  # noqa: E402
+from src.agents.cross_border_finance import lock_engine  # noqa: E402
 from src.agents.cross_border_finance import tax_report
-import src.agents.cross_border_finance.blockchain_log as blockchain_log
-from src.agents.myob_payroll import agent as myob_payroll
+from src.agents.myob_payroll import agent as myob_payroll  # noqa: E402
 
 # Configure the page - this must be the first Streamlit command
 st.set_page_config(
     page_title="Cross Border Finance Agent",
     page_icon="🌏",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:5000")
+
 
 def login_page():
     st.title("Welcome to Cross Border Finance Agent")
@@ -39,15 +41,18 @@ def login_page():
             password = st.text_input("Password", type="password", key="login_password")
             if st.button("Login", type="primary"):
                 try:
-                    resp = requests.post(f"{API_URL}/api/login", json={"email": email, "password": password})
+                    resp = requests.post(
+                        f"{API_URL}/api/login",
+                        json={"email": email, "password": password},
+                    )
                     if resp.status_code == 200:
                         data = resp.json()
-                        st.session_state['logged_in'] = True
-                        st.session_state['user'] = data['user']
+                        st.session_state["logged_in"] = True
+                        st.session_state["user"] = data["user"]
                         st.success("Login successful!")
                         st.rerun()
                     else:
-                        st.error(resp.json().get('error', 'Login failed'))
+                        st.error(resp.json().get("error", "Login failed"))
                 except Exception as e:
                     st.error(f"Connection error: {e}")
                     st.info("Ensure the Flask backend is running on port 5000.")
@@ -55,57 +60,75 @@ def login_page():
         with tab2:
             st.subheader("Register")
             new_email = st.text_input("New Email", key="reg_email")
-            new_password = st.text_input("New Password", type="password", key="reg_password")
+            new_password = st.text_input(
+                "New Password", type="password", key="reg_password"
+            )
             if st.button("Register"):
                 try:
-                    resp = requests.post(f"{API_URL}/api/register", json={"email": new_email, "password": new_password})
+                    resp = requests.post(
+                        f"{API_URL}/api/register",
+                        json={"email": new_email, "password": new_password},
+                    )
                     if resp.status_code == 201:
                         data = resp.json()
-                        st.success(data.get('message'))
-                        if 'mock_verify_link' in data:
-                            st.info(f"Mock Verification Link (Click to verify): [Link]({data['mock_verify_link']})")
-                            st.caption("In a real app, this would be sent to your email.")
+                        st.success(data.get("message"))
+                        if "mock_verify_link" in data:
+                            st.info(
+                                "Mock Verification Link (Click to verify): "
+                                f"[Link]({data['mock_verify_link']})"
+                            )
+                            st.caption(
+                                "In a real app, this would be sent to your email."
+                            )
                     else:
-                        st.error(resp.json().get('error', 'Registration failed'))
+                        st.error(resp.json().get("error", "Registration failed"))
                 except Exception as e:
                     st.error(f"Connection error: {e}")
 
+
 def home():
     st.title("Cross Border Finance Agent Platform")
-    if 'user' in st.session_state:
+    if "user" in st.session_state:
         st.success(f"Welcome back, {st.session_state['user']['email']}!")
 
     st.markdown("""
     ### Welcome to the Unified Cross Border Finance Platform
 
-    This platform integrates multiple specialized intelligent agents to assist with your cross-border financial operations.
+    This platform integrates multiple specialized intelligent agents to assist with
+    your cross-border financial operations.
 
     Please select a tool from the sidebar to get started:
 
-    *   **💱 Exchange Rate Lock Engine**: Real-time exchange rate calculation and locking strategies.
-    *   **🛡️ Compliance Check (ASIC)**: Automated self-assessment for ASIC regulatory compliance.
-    *   **🧾 Tax Report Generator (ATO)**: Generate compliant tax reports for cross-border trade.
-    *   **🔗 Blockchain Log Evidence**: Verify and view immutable transaction logs on the blockchain.
-    *   **💰 MYOB Payroll**: Automate payroll tasks and manage employees via MYOB AccountRight API.
+    *   **💱 Exchange Rate Lock Engine**: Real-time exchange rate calculation and
+        locking strategies.
+    *   **🛡️ Compliance Check (ASIC)**: Automated self-assessment for ASIC regulatory
+        compliance.
+    *   **🧾 Tax Report Generator (ATO)**: Generate compliant tax reports
+        for cross-border trade.
+    *   **🔗 Blockchain Log Evidence**: Verify and view immutable transaction
+        logs on the blockchain.
+    *   **💰 MYOB Payroll**: Automate payroll tasks and manage employees
+        via MYOB AccountRight API.
     """)
 
     st.info("Select a module from the sidebar navigation.")
 
-def app():
-    if 'logged_in' not in st.session_state:
-        st.session_state['logged_in'] = False
 
-    if not st.session_state['logged_in']:
+def app():
+    if "logged_in" not in st.session_state:
+        st.session_state["logged_in"] = False
+
+    if not st.session_state["logged_in"]:
         login_page()
         return
 
     st.sidebar.title("Navigation")
-    if 'user' in st.session_state:
+    if "user" in st.session_state:
         st.sidebar.caption(f"User: {st.session_state['user']['email']}")
 
     if st.sidebar.button("Logout"):
-        st.session_state['logged_in'] = False
-        st.session_state['user'] = None
+        st.session_state["logged_in"] = False
+        st.session_state["user"] = None
         st.rerun()
 
     st.sidebar.markdown("---")
@@ -117,7 +140,7 @@ def app():
         "Compliance Check": compliance.app,
         "Tax Report": tax_report.app,
         "Blockchain Log": blockchain_log.app,
-        "MYOB Payroll": myob_payroll.app
+        "MYOB Payroll": myob_payroll.app,
     }
 
     selection = st.sidebar.radio("Go to", list(apps.keys()))
@@ -128,6 +151,7 @@ def app():
 
     app_func = apps[selection]
     app_func()
+
 
 if __name__ == "__main__":
     app()

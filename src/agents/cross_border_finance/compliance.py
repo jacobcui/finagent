@@ -6,8 +6,8 @@ import pandas as pd
 import streamlit as st
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
@@ -15,7 +15,10 @@ from reportlab.pdfgen import canvas
 # 1. 规则库定义 (Embedded Rules)
 # ==========================================
 COMPLIANCE_RULES = [
-    "RULE1: 境外关联交易需在30天内登录ASIC官网提交Form 6010备案 (https://asic.gov.au/form-6010)",
+    (
+        "RULE1: 境外关联交易需在30天内登录ASIC官网提交Form 6010备案 "
+        "(https://asic.gov.au/form-6010)"
+    ),
     "RULE2: 单次跨境资金流动超50万澳元需提前向澳洲央行(RBA)报备",
     "RULE3: 未申报的跨境服务贸易收入将面临ATO 10%罚款",
 ]
@@ -60,11 +63,13 @@ def analyze_transaction(row: pd.Series, api_key: str) -> dict:
         [
             (
                 "system",
-                "你是一个专业的跨境金融合规专家。请根据以下ASIC合规规则，分析用户的交易是否存在风险。\n\n规则库:\n{rules}",
+                "你是一个专业的跨境金融合规专家。请根据以下ASIC合规规则，"
+                "分析用户的交易是否存在风险。\n\n规则库:\n{rules}",
             ),
             (
                 "user",
-                "请分析以下交易:\n{transaction}\n\n请输出JSON格式结果，包含: risk_level, violation, suggestion, reasoning。",
+                "请分析以下交易:\n{transaction}\n\n请输出JSON格式结果，包含: "
+                "risk_level, violation, suggestion, reasoning。",
             ),
         ]
     )
@@ -115,7 +120,6 @@ def generate_pdf_report(risky_transactions: List[dict]) -> bytes:
     # actually, let's try to register a font if we can find one, otherwise standard.
     # For robustness, I will assume English output for the PDF to ensure it works everywhere,
     # OR I will just write the content and if it fails to render Chinese it's a known ReportLab issue.
-    # BUT: "输出：风险交易清单（Excel下载） + PDF格式合规整改报告"
 
     c.setFont("Helvetica-Bold", 16)
     c.drawString(50, height - 50, "Cross-Border Finance Compliance Report")
@@ -263,7 +267,10 @@ def app():
                             label="📥 下载完整风险清单 (Excel)",
                             data=excel_data,
                             file_name="compliance_check_result.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            mime=(
+                                "application/vnd.openxmlformats-officedocument"
+                                ".spreadsheetml.sheet"
+                            ),
                         )
 
                         # 2. PDF

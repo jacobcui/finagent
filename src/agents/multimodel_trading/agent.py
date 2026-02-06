@@ -190,7 +190,8 @@ class MarketIntelligenceModule:
             [
                 (
                     "system",
-                    "You are a financial market expert. Analyze multimodal market data and extract key insights.",
+                    "You are a financial market expert. Analyze multimodal "
+                    "market data and extract key insights.",
                 ),
                 (
                     "user",
@@ -203,13 +204,19 @@ class MarketIntelligenceModule:
 
         Please output in the following XML format:
         <output>
-            <string name="analysis">Analysis of each news item (ID + impact period + sentiment + core event)</string>
-            <string name="summary">Summary of investment insights (including market sentiment)</string>
+            <string name="analysis">Analysis of each news item
+            (ID + impact period + sentiment + core event)</string>
+            <string name="summary">Summary of investment insights
+            (including market sentiment)</string>
             <map name="query">
-                <string name="short_term_impact">Retrieval keywords for short-term impact</string>
-                <string name="medium_long_term_impact">Retrieval keywords for medium/long-term impact</string>
-                <string name="bullish_trend">Retrieval keywords for bullish trend</string>
-                <string name="bearish_trend">Retrieval keywords for bearish trend</string>
+                <string name="short_term_impact">Retrieval keywords
+                for short-term impact</string>
+                <string name="medium_long_term_impact">Retrieval keywords
+                for medium/long-term impact</string>
+                <string name="bullish_trend">Retrieval keywords
+                for bullish trend</string>
+                <string name="bearish_trend">Retrieval keywords
+                for bearish trend</string>
             </map>
             <map name="market_intel_data">
                 <string name="core_event">Core event</string>
@@ -238,14 +245,16 @@ class MarketIntelligenceModule:
                 [
                     (
                         "system",
-                        "Analyze price trends and technical indicators (MA/BB) from candlestick charts.",
+                        "Analyze price trends and technical indicators (MA/BB) "
+                        "from candlestick charts.",
                     ),
                     (
                         "user",
                         [
                             {
                                 "type": "text",
-                                "text": "Please analyze the short/medium/long-term trends in this candlestick chart.",
+                                "text": "Please analyze the short/medium/long-term "
+                                "trends in this candlestick chart.",
                             },
                             {
                                 "type": "image_url",
@@ -300,9 +309,12 @@ class ReflectionModule:
                     <string name="long_term_reasoning">Long-term price change reason</string>
                 </map>
                 <map name="query">
-                    <string name="price_increase">Retrieval keywords for price increase</string>
-                    <string name="price_decrease">Retrieval keywords for price decrease</string>
-                    <string name="technical_indicator_based">Retrieval keywords for technical indicators</string>
+                    <string name="price_increase">Retrieval keywords
+                    for price increase</string>
+                    <string name="price_decrease">Retrieval keywords
+                    for price decrease</string>
+                    <string name="technical_indicator_based">Retrieval keywords
+                    for technical indicators</string>
                 </map>
                 <map name="reflection_data">
                     <string name="time_horizon">Primary analysis time horizon</string>
@@ -317,7 +329,8 @@ class ReflectionModule:
             [
                 (
                     "system",
-                    "Reflect on the correctness of historical trading decisions and optimize them.",
+                    "Reflect on the correctness of historical trading decisions "
+                    "and optimize them.",
                 ),
                 (
                     "user",
@@ -332,9 +345,12 @@ class ReflectionModule:
                 <string name="improvement">Optimization suggestions</string>
                 <string name="summary">Summary of experience</string>
                 <map name="query">
-                    <string name="bullish_trend">Retrieval keywords for bullish decisions</string>
-                    <string name="bearish_trend">Retrieval keywords for bearish decisions</string>
-                    <string name="news_based">Retrieval keywords for news-driven decisions</string>
+                    <string name="bullish_trend">Retrieval keywords
+                    for bullish decisions</string>
+                    <string name="bearish_trend">Retrieval keywords
+                    for bearish decisions</string>
+                    <string name="news_based">Retrieval keywords
+                    for news-driven decisions</string>
                 </map>
                 <map name="reflection_data">
                     <string name="decision_result">Current decision result</string>
@@ -418,7 +434,8 @@ class ToolAugmentedDecisionModule:
             [
                 (
                     "system",
-                    "You are a trading decision assistant. Use market analysis and reflections to choose an action.",
+                    "You are a trading decision assistant. Use market analysis "
+                    "and reflections to choose an action.",
                 ),
                 (
                     "user",
